@@ -12,17 +12,58 @@ class DOMHelper {
     }
   }
   
-  class Tooltip {}
+  class Tooltip {
+
+    constructor(closeNotifierFunction) {
+      this.closeNotifier = closeNotifierFunction;
+    }
+
+    closeToolTip = () => {
+      this.detach();
+      this.closeNotifier();
+    }
+
+    detach() {
+      this.element.remove();
+
+    }
+    show() {
+      const toolTipElement = document.createElement('div');
+      toolTipElement.className = 'card';
+      toolTipElement.textContent = 'More info...';
+      toolTipElement.addEventListener('click',this.closeToolTip);
+      this.element = toolTipElement;
+      document.body.append(toolTipElement);
+    }
+  }
   
   class ProjectItem {
+
+    hasActiveTooltip = false;
+
     constructor(id, updateProjectListsFunction, type) {
       this.id = id;
       this.updateProjectListsHandler = updateProjectListsFunction;
       this.connectMoreInfoButton();
       this.connectSwitchButton(type);
     }
+
+    showMoreInfoHandler() {
+      if(this.hasActiveTooltip) {
+        return;
+      }
+      const tooltip = new Tooltip( () => {
+        this.hasActiveTooltip = false;
+      });
+      tooltip.show();
+      this.hasActiveTooltip = true;
+    }
   
-    connectMoreInfoButton() {}
+    connectMoreInfoButton() {
+      const projectItemElement = document.getElementById(this.id);
+      const moreInfoBtn = projectItemElement.querySelector('button:first-of-type');
+      moreInfoBtn.addEventListener('click', this.showMoreInfoHandler);
+    }
   
     connectSwitchButton(type) {
       const projectItemElement = document.getElementById(this.id);
